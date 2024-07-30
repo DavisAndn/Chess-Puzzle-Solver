@@ -1,6 +1,28 @@
-chrome.webRequest.onCompleted.addListener(
-    function(details) {
-      fetch(details.url, {
+chrome.runtime.onInstalled.addListener(() => {
+    chrome.declarativeNetRequest.updateDynamicRules({
+      addRules: [
+        {
+          id: 1,
+          priority: 1,
+          action: { 
+            type: "modifyHeaders",
+            responseHeaders: [
+              { header: "Content-Type", operation: "set", value: "application/json" }
+            ]
+          },
+          condition: {
+            urlFilter: "https://www.chess.com/callback/tactics/rated/next",
+            resourceTypes: ["xmlhttprequest"]
+          }
+        }
+      ],
+      removeRuleIds: [1]
+    });
+  });
+  
+  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.action === "fetchPGN") {
+      fetch("https://www.chess.com/callback/tactics/rated/next", {
         method: 'GET',
         headers: {
           'accept': 'application/json, text/plain, */*',
@@ -19,11 +41,17 @@ chrome.webRequest.onCompleted.addListener(
       .then(response => response.json())
       .then(data => {
         if (data && data.pgn) {
-          chrome.storage.local.set({pgn: data.pgn});
+          chrome.storage.local.set({ pgn: data.pgn });
+          sendResponse({ success: true, pgn: data.pgn });
+        } else {
+          sendResponse({ success: false });
         }
+      })
+      .catch(error => {
+        console.error('Failed to fetch data:', error);
+        sendResponse({ success: false, error: error.message });
       });
-    },
-    {urls: ["https://www.chess.com/callback/tactics/rated/next"]},
-    []
-  );
+      return true; // Keep the messaging channel open for sendResponse
+    }
+  });
   

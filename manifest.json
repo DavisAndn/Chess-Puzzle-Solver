@@ -3,10 +3,11 @@
     "name": "Chess.com PGN Extractor",
     "version": "1.0",
     "permissions": [
-      "webRequest",
-      "webRequestBlocking",
+      "declarativeNetRequest",
       "activeTab",
-      "storage",
+      "storage"
+    ],
+    "host_permissions": [
       "https://www.chess.com/*"
     ],
     "background": {
@@ -19,9 +20,6 @@
         "48": "icons/icon48.png",
         "128": "icons/icon128.png"
       }
-    },
-    "host_permissions": [
-      "https://www.chess.com/*"
-    ]
+    }
   }
   
